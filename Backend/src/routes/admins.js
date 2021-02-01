@@ -11,7 +11,7 @@ router.get('', auth, adminsController.adminIndex)
 router.get('/:id', auth, adminsController.adminDetails)
 
 // create new admin
-router.post('', adminsController.adminCreate)
+router.post('',auth, adminsController.adminCreate)
 
 // update admin by id
 router.patch('/:id', auth, adminsController.adminUpdate)
