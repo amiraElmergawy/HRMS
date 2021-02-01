@@ -10,21 +10,18 @@ const auth = async(req,res,next) =>{
     */
     try{
         const token = req.header('Authorization').replace('Bearer ','')
-        //console.log(token)
         const decodedToken = jwt.verify( token , "welcomeToMySystem" )
-        //console.log(decodedToken)
-        // dataJson = JSON.parse(decodedToken.data)
-        // console.log(dataJson)
-        const admin = await adminModel.findOne({_id:decodedToken.data._id, 'tokens.token': token})
-        //console.log(admin)
+        const admin = await adminModel.findOne({_id:decodedToken._id, 'tokens.token': token})
         if(!admin){
             return res.status(401).send({
-                message:'please ',
+                message:'unauthorized',
             })
         }
+        else{
         req.admin = admin
         req.token = token
         next()
+        }
     }
     catch(e){
         res.status(500).send({
