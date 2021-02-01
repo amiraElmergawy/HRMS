@@ -81,18 +81,33 @@ const departmentUpdate = async (req, res) => {
 const departmentDelete = async (req, res) => {
     const _id = req.params.id
     try {
-        console.log(_id)
-        console.log('1')
-        // const department = await departmentsModel.findByIdAndDelete(_id)
-        const department = await departmentsModel.find({_id})
-        await department.remove()
-        if (!department) return res.status(404).send({
+        const department = await departmentsModel.findById(_id)
+        if (!department){
+        return res.status(404).send({
             message: 'هذه البيانات غير موجوده',
             data: ''
         })
-        res.status(200).send({
-            message: "تمت العملية بنجاح"
-        })
+    }
+        else {
+            // department.childs.forEach((dept) => {
+            // });
+            // console.log(department)
+            await department.populate('employees').execPopulate()
+            // console.log(department.employees)
+            if (department.employees.length > 0 || department.childs.length > 0) {
+                res.status(405).send({
+                    message: 'لا يسمح بمسح هذا القسم لوجود عاملين به',
+                    data:department.employees
+                })
+            }
+            else {
+                department.remove()
+                res.status(200).send({
+                    message: "تمت العملية بنجاح",
+                    data: ""
+                })
+            }
+        }
     }
     catch (e) {
         res.status(500).send({
@@ -103,13 +118,29 @@ const departmentDelete = async (req, res) => {
 
 const departmentEmployees = async (req, res) => {
     const _id = req.params.id
-    const dept = await departmentsModel.findById(_id) // return department of this id
     try {
-        await dept.populate('employees').execPopulate()
-        res.status(200).send({
-            message:"تمت العملية بنجاح",
-            data:dept.employees
-        })
+        const dept = await departmentsModel.findById(_id) // return department of this id
+        if(dept){
+            await dept.populate('employees').execPopulate()
+            if (dept.employees.length > 0) {
+                return res.status(200).send({
+                    message: "تمت العملية بنجاح",
+                    data: dept.employees
+                })
+            }
+            else{
+                res.status(200).send({
+                    message: "تمت العملية بنجاح",
+                    data: []
+                })
+            }
+        }
+        else {
+            return res.status(404).send({
+                message: "لا توجد بيانات",
+                data: ''
+            })
+        }
     }
     catch (e) {
         res.status(500).send({
@@ -126,11 +157,11 @@ const departmentAddChild = async (req, res) => {
     childData = new departmentsModel(req.body)
     try {
         const dept = await departmentsModel.findById(_id)
-        if(!dept) return res.status(404).send({
+        if (!dept) return res.status(404).send({
             message: 'القسم غير موجود'
         })
-        else{
-            const flag = dept.childs.find( child => child.name === childData.name )
+        else {
+            const flag = dept.childs.find(child => child.name === childData.name)
             if (!flag) {
                 dept.childs.push(childData);
                 await dept.save()
@@ -147,59 +178,55 @@ const departmentAddChild = async (req, res) => {
     }
     catch (e) {
         res.status(500).send({
-            message:"حدث خطأ في الخادم الداخلي",
+            message: "حدث خطأ في الخادم الداخلي",
             data: e // to display only error message should access e.errors.name.message
         })
     }
 }
 
-const departmentSearch1 = async(req, res)=>{
+const departmentSearch1 = async (req, res) => {
     const name = req.body.name
-    try{
-        const dept = await departmentsModel.find({name})
-        // console.log(dept)
-        if(dept && dept.length != 0) return res.status(200).send({
-            message:"تمت العملية بنجاح ",
+    try {
+        const dept = await departmentsModel.find({ name })
+        if (dept && dept.length != 0) return res.status(200).send({
+            message: "تمت العملية بنجاح ",
             data: dept
         })
         else return res.status(404).send({
-            message:" يرجي ادخال بيانات صحيحه  ",
+            message: " يرجي ادخال بيانات صحيحه  ",
             data: ""
         })
     }
-    catch(e){
+    catch (e) {
         res.status(500).send({
-            message:"حدث خطأ في الخادم الداخلي",
-            date:e
+            message: "حدث خطأ في الخادم الداخلي",
+            date: e
         })
     }
 }
 
 
-const departmentSearch = async(req, res)=>{
+const departmentSearch = async (req, res) => {
     const name = req.body.name.trim()
-    try{
+    try {
         const departments = await departmentsModel.find()
         const searchResult = departments.filter((item) => {
-            // console.log(item)
             const x = item.name.search(name)
-            // console.log(x)
             if (x != -1) return item
         })
-        // console.log(searchResult)
-        if(searchResult && searchResult.length != 0) return res.status(200).send({
-            message:"تمت العملية بنجاح ",
+        if (searchResult && searchResult.length != 0) return res.status(200).send({
+            message: "تمت العملية بنجاح ",
             data: searchResult
         })
         else return res.status(404).send({
-            message:" يرجي ادخال بيانات صحيحه  ",
+            message: " يرجي ادخال بيانات صحيحه  ",
             data: ""
         })
     }
-    catch(e){
+    catch (e) {
         res.status(500).send({
-            message:"حدث خطأ في الخادم الداخلي",
-            date:e
+            message: "حدث خطأ في الخادم الداخلي",
+            date: e
         })
     }
 }
