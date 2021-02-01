@@ -4,8 +4,12 @@ const adminsModel = require('../models/admins')
 const adminIndex = async (req, res) => {
     try {
         const admins = await adminsModel.find()
-        if (!admins) return res.status(404).send('هذه البيانات غير موجوده')
-        else return res.status(200).send(admins)
+        if (!admins) return res.status(404).send({
+            message:'هذه البيانات غير موجوده'
+            })
+        else return res.status(200).send({
+            data:admins
+            })
     }
     catch (e) {
         res.status(500).send({
@@ -18,8 +22,12 @@ const adminDetails = async (req, res) => {
     const _id = req.params.id
     try {
         const admin = await adminsModel.findById({ _id })
-        if (!admin) return res.status(404).send('هذه البيانات غير موجودة')
-        else return res.status(200).send(admin)
+        if (!admin) return res.status(404).send({
+            message:'هذه البيانات غير موجودة'
+            })
+        else return res.status(200).send({
+            data:admin
+            })
     }
     catch (e) {
         res.status(500).send({
@@ -36,7 +44,11 @@ const adminCreate = async (req, res) => {
         await adminData.save()
         res.status(200).send({
             message: 'تمت العملية بنجاح',
-            data: {adminData,token}
+            data: {
+                adminData
+                ,
+                token
+                }
         })
     }
     catch (e) {
@@ -109,14 +121,10 @@ const adminLogIn = async(req, res)=>{
         })
     }
     catch(e){
-        res.status(422).send({
+        res.status(500).send({
             message:'يرجي ادخال بيانات صحيحة',
             data:e
         })
-        // res.status(500).send({ // will cause an error for handling promise-response twice
-        //     message:'يرجي ادخال بيانات صحيحة',
-        //     data:e
-        // })
     }
 }
 
