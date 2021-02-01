@@ -52,7 +52,7 @@ adminSchema.statics.findLogin = async (userName, password) => {
 adminSchema.methods.generateToken = async function () {
     const admin = this
     // console.log(admin)
-    const token = jwt.sign({ data: admin }, 'welcomeToMySystem')
+    const token = jwt.sign({_id:admin._id.toString()}, 'welcomeToMySystem')
     // console.log(admin.tokens)
     admin.tokens = admin.tokens.concat({ token })
     await admin.save()
