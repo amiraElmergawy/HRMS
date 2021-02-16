@@ -38,7 +38,7 @@ adminSchema.methods.toJSON = function(){
 
 adminSchema.pre('save', async function (next) {
     const adminData = this
-    if (adminData.isModified('password')) adminData.password = await bcrypt.hash(adminData.password, 19)
+    if (adminData.isModified('password')) adminData.password = await bcrypt.hash(adminData.password, 15)
     next()
 })
 
