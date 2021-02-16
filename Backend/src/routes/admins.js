@@ -11,16 +11,17 @@ router.get('', auth, adminsController.adminIndex)
 router.get('/:id', auth, adminsController.adminDetails)
 
 // create new admin
-router.post('',auth, adminsController.adminCreate)
+router.post('', auth, adminsController.adminCreate)
 
 // update admin by id
-router.patch('/:id', auth, adminsController.adminUpdate)
+router.patch('/update/:id', auth, adminsController.adminUpdate)
 
 // delete admin by id
-router.delete('/:id', auth, adminsController.adminDelete)
+router.delete('/delete/:id', auth, adminsController.adminDelete)
 
 // log in
 router.post('/logIn', adminsController.adminLogIn)
+
 // log out
 router.post('/logOut', auth, adminsController.adminLogOut)
 
