@@ -13,10 +13,10 @@ router.get('/:id', departmentsController.departmentDetails)
 router.post('', departmentsController.departmentCreate)
 
 // update department by id
-router.patch('/update/:id',auth, departmentsController.departmentUpdate)
+router.patch('/update/:id', auth, departmentsController.departmentUpdate)
 
 // delete department by id
-router.delete('/delete/:id',auth, departmentsController.departmentDelete)
+router.delete('/delete/:id', auth, departmentsController.departmentDelete)
 
 // get all department employees
 router.get('/:id/employees', departmentsController.departmentEmployees)
@@ -24,7 +24,10 @@ router.get('/:id/employees', departmentsController.departmentEmployees)
 // add child to department
 router.post('/:id/addChild', departmentsController.departmentAddChild)
 
+// remove child
+router.post('/:id/removeChild', auth, departmentsController.departmentRemoveChild)
+
 // search for department by name
-router.post('/search',departmentsController.departmentSearch)
+router.post('/search', departmentsController.departmentSearch)
 
 module.exports = router

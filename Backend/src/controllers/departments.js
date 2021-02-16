@@ -31,7 +31,7 @@ const departmentDetails = async (req, res) => {
 const departmentCreate = async (req, res) => {
     departmentData = new departmentsModel({
         ...req.body,
-        parent:{default:""}
+        parent: { default: "" }
     })
     // console.log(departmentData)
     try {
@@ -52,7 +52,7 @@ const departmentCreate = async (req, res) => {
 
 const departmentUpdate = async (req, res) => {
     const _id = req.params.id
-    avlUpdates = ['name', 'head', 'childs']
+    avlUpdates = ['name', 'head']
     const keys = Object.keys(req.body)
     // let childsFlag = false;
     try {
@@ -65,9 +65,6 @@ const departmentUpdate = async (req, res) => {
             // console.log(department, req.body)
             const flag = avlUpdates.includes(key)
             switch (key) {
-                case 'childs':
-                    department.childs = req.body.childs
-                    break;
                 case 'name':
                     department.name = req.body.name
                     break;
@@ -180,32 +177,32 @@ const departmentAddChild = async (req, res) => {
     // console.log(_id, child)
     try {
         const dept = await departmentsModel.findById(_id)
-        const testChild = await departmentsModel.findById(childId)
+        const child = await departmentsModel.findById(childId)
         // console.log(child)
         if (!dept) return res.status(404).send({
             message: 'القسم غير موجود'
         })
         else {
             const flag = dept.childs.find(deptChild => deptChild._id == childId)
-            // const flag = dept.childs.indexOf(testChild)
+            // const flag = dept.childs.indexOf(child)
             console.log(flag)
             if (dept._id == childId) return res.status(405).send({
                 message: ' غير مسموح ربط القسم بنفسه ',
                 // data: {}
             })
-            // console.log(testChild.parent._id)
-            if(testChild.parent._id) return res.status(405).send({
+            // console.log(child.parent._id)
+            if (child.parent._id) return res.status(405).send({
                 message: ' لا يمكن ربط هذا القسم ',
                 // data: {}
             })
             if (!flag) { // to check that current child not added before
                 // const parent = dept
-                testChild.parent = {
+                child.parent = {
                     _id: dept._id
                 }
-                await testChild.save()
-                console.log(testChild)
-                dept.childs.push(testChild)
+                await child.save()
+                // console.log(child)
+                dept.childs.push(child)
                 await dept.save()
                 // console.log(child.parent)
                 // console.log(dept.childs)
@@ -229,6 +226,29 @@ const departmentAddChild = async (req, res) => {
     }
 }
 
+const departmentRemoveChild = async (req, res) => {
+    const _id = req.params.id
+    childId = req.body._id
+    // console.log(_id, child)
+    try {
+        const dept = await departmentsModel.findById(_id)
+        const child = await departmentsModel.findById(childId)
+        dept.childs = dept.childs.filter(ele => ele._id != childId)
+        child.parent = { default:"" }
+        dept.save()
+        child.save()
+        res.status(200).send({
+            message: "تم الغاءالربط بنجاح",
+            data: {dept, child}
+        })
+    }
+    catch (e) {
+        res.status(500).send({
+            message: "حدث خطأ في الخادم الداخلي",
+            data: e // to display only error message should access e.errors.name.message
+        })
+    }
+}
 
 // const departmentSearch1 = async (req, res) => {
 //     const name = req.body.name
@@ -285,6 +305,7 @@ module.exports = {
     departmentUpdate,
     departmentDelete,
     departmentEmployees,
+    departmentSearch,
     departmentAddChild,
-    departmentSearch
+    departmentRemoveChild
 }
