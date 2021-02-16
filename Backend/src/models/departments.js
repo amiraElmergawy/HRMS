@@ -1,7 +1,7 @@
 const { ObjectID } = require('mongodb')
 const mongoose = require('mongoose')
 const customValidator = require('./customValidator')
-const employeeModel = require('./employees')
+// const employeeModel = require('./employees')
 const departmentSchema = mongoose.Schema({
     name: {
         type: String,
@@ -17,8 +17,16 @@ const departmentSchema = mongoose.Schema({
         // required: true, // every department has a manager
         ref:'employee'
     },
-    childs: []
+    childs: [],
+    parent:{}
 })
+
+// departmentSchema.pre('save', async function (next) {
+//     console.log(this,'pre save')
+//     // const adminData = this
+//     // if (adminData.isModified('password')) adminData.password = await bcrypt.hash(adminData.password, 15)
+//     next();
+// })
 
 departmentSchema.virtual('employees',{
     ref:'employee',
