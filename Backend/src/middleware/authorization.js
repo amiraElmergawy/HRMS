@@ -10,13 +10,11 @@ const auth = async(req,res,next) =>{
     */
     try{
         const token = req.header('Authorization').replace('Bearer ','')
+        // console.log(token)
         const decodedToken = jwt.verify( token , "welcomeToMySystem" )
+        // console.log(decodedToken)
         const admin = await adminModel.findOne({_id:decodedToken._id, 'tokens.token': token})
-        if(!admin){
-            return res.status(401).send({
-                message:'unauthorized',
-            })
-        }
+        if(!(admin || admin.type)) throw new Error()
         else{
         req.admin = admin
         req.token = token
@@ -26,7 +24,7 @@ const auth = async(req,res,next) =>{
     catch(e){
         res.status(500).send({
             data:e,
-            message:'please authintcate',
+            message:'غير مصرح القيام بهذه العمليه',
         })
     }
 }
