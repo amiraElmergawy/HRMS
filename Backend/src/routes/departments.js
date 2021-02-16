@@ -13,10 +13,10 @@ router.get('/:id', departmentsController.departmentDetails)
 router.post('', departmentsController.departmentCreate)
 
 // update department by id
-router.patch('/:id',auth, departmentsController.departmentUpdate)
+router.patch('/update/:id',auth, departmentsController.departmentUpdate)
 
 // delete department by id
-router.delete('/:id',auth, departmentsController.departmentDelete)
+router.delete('/delete/:id',auth, departmentsController.departmentDelete)
 
 // get all department employees
 router.get('/:id/employees', departmentsController.departmentEmployees)
