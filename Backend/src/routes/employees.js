@@ -14,10 +14,10 @@ router.get('/:id', employeesController.employeeDetails)
 router.post('', employeesController.employeeCreate)
 
 // update employee by id
-router.patch('/:id', auth, employeesController.employeeUpdate)
+router.patch('/update/:id', auth, employeesController.employeeUpdate)
 
 // delete employee by id
-router.delete('/:id', auth, employeesController.employeeDelete)
+router.delete('/delete/:id', auth, employeesController.employeeDelete)
 
 // user can serach by inssuranceNo, nId, name, code, job
 router.post('/search', employeesController.employeeSearch)
