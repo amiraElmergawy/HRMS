@@ -30,8 +30,10 @@ const departmentDetails = async (req, res) => {
 
 const departmentCreate = async (req, res) => {
     departmentData = new departmentsModel({
-        ...req.body
+        ...req.body,
+        parent:{default:""}
     })
+    // console.log(departmentData)
     try {
         await departmentData.save()
         res.status(200).send({
@@ -42,6 +44,7 @@ const departmentCreate = async (req, res) => {
     catch (e) {
         // res.status(422).send('يرجي ادخال بيانات صحيحة')
         res.status(500).send({
+            message: 'هذا القسم موجود بالفعل',
             data: e // to display only error message should access e.errors.name.message
         })
     }
@@ -49,23 +52,38 @@ const departmentCreate = async (req, res) => {
 
 const departmentUpdate = async (req, res) => {
     const _id = req.params.id
-    avlUpdates = ['name', 'head']
+    avlUpdates = ['name', 'head', 'childs']
     const keys = Object.keys(req.body)
-    const flag = keys.every((k) => avlUpdates.includes(k))
-    if (!flag) return res.status(405).send({
-        message: "غير مسموح بهذا التحديث",
-        data: ""
-    })
+    // let childsFlag = false;
     try {
-        const department = await departmentsModel.findByIdAndUpdate(
-            _id,
-            req.body,
-            { runValidators: true }
-        )
+        const department = await departmentsModel.findById(_id)
         if (!department) return res.status(404).send({
             message: 'هذه البيانات غير موجوده',
-            data: ''
+            // data: {}
         })
+        const flag = keys.every((key) => {
+            // console.log(department, req.body)
+            const flag = avlUpdates.includes(key)
+            switch (key) {
+                case 'childs':
+                    department.childs = req.body.childs
+                    break;
+                case 'name':
+                    department.name = req.body.name
+                    break;
+                case 'head':
+                    department.head = req.body.head
+                    break;
+                default:
+                    break;
+            }
+            return flag;
+        })
+        if (!flag) return res.status(405).send({
+            message: "غير مسموح بهذا التحديث",
+            data: ""
+        })
+        await department.save()
         res.status(200).send({
             message: "تمت العملية بنجاح",
             data: department
@@ -73,7 +91,8 @@ const departmentUpdate = async (req, res) => {
     }
     catch (e) {
         res.status(500).send({
-            data: e
+            data: e,
+            // message: e
         })
     }
 }
@@ -82,12 +101,12 @@ const departmentDelete = async (req, res) => {
     const _id = req.params.id
     try {
         const department = await departmentsModel.findById(_id)
-        if (!department){
-        return res.status(404).send({
-            message: 'هذه البيانات غير موجوده',
-            data: ''
-        })
-    }
+        if (!department) {
+            return res.status(404).send({
+                message: 'هذه البيانات غير موجوده',
+                data: ''
+            })
+        }
         else {
             // department.childs.forEach((dept) => {
             // });
@@ -97,7 +116,7 @@ const departmentDelete = async (req, res) => {
             if (department.employees.length > 0 || department.childs.length > 0) {
                 res.status(405).send({
                     message: 'لا يسمح بمسح هذا القسم لوجود عاملين به',
-                    data:department.employees
+                    data: department.employees
                 })
             }
             else {
@@ -120,7 +139,7 @@ const departmentEmployees = async (req, res) => {
     const _id = req.params.id
     try {
         const dept = await departmentsModel.findById(_id) // return department of this id
-        if(dept){
+        if (dept) {
             await dept.populate('employees').execPopulate()
             if (dept.employees.length > 0) {
                 return res.status(200).send({
@@ -128,7 +147,7 @@ const departmentEmployees = async (req, res) => {
                     data: dept.employees
                 })
             }
-            else{
+            else {
                 res.status(200).send({
                     message: "تمت العملية بنجاح",
                     data: []
@@ -153,26 +172,52 @@ const departmentEmployees = async (req, res) => {
 
 
 const departmentAddChild = async (req, res) => {
+    // take the parent id and child id
+    // check if the not already exist, child not the parent itself, and child not already related with any other parent
+    // find the parent by id, push child to its childs' array, and add parent dept to childParent property
     const _id = req.params.id
-    childData = new departmentsModel(req.body)
+    childId = req.body._id
+    // console.log(_id, child)
     try {
         const dept = await departmentsModel.findById(_id)
+        const testChild = await departmentsModel.findById(childId)
+        // console.log(child)
         if (!dept) return res.status(404).send({
             message: 'القسم غير موجود'
         })
         else {
-            const flag = dept.childs.find(child => child.name === childData.name)
-            if (!flag) {
-                dept.childs.push(childData);
+            const flag = dept.childs.find(deptChild => deptChild._id == childId)
+            // const flag = dept.childs.indexOf(testChild)
+            console.log(flag)
+            if (dept._id == childId) return res.status(405).send({
+                message: ' غير مسموح ربط القسم بنفسه ',
+                // data: {}
+            })
+            // console.log(testChild.parent._id)
+            if(testChild.parent._id) return res.status(405).send({
+                message: ' لا يمكن ربط هذا القسم ',
+                // data: {}
+            })
+            if (!flag) { // to check that current child not added before
+                // const parent = dept
+                testChild.parent = {
+                    _id: dept._id
+                }
+                await testChild.save()
+                console.log(testChild)
+                dept.childs.push(testChild)
                 await dept.save()
+                // console.log(child.parent)
+                // console.log(dept.childs)
+                // dept.childs[dept.childs.length -1] = child
                 return res.status(200).send({
                     message: 'تمت العملية بنجاح',
                     data: dept
                 })
             }
             else return res.status(405).send({
-                message: ' يرجي ادخال بيانات صحيحه ',
-                data: ""
+                message: ' هذا القسم موجود بالفعل ',
+                // data: {}
             })
         }
     }
@@ -184,26 +229,27 @@ const departmentAddChild = async (req, res) => {
     }
 }
 
-const departmentSearch1 = async (req, res) => {
-    const name = req.body.name
-    try {
-        const dept = await departmentsModel.find({ name })
-        if (dept && dept.length != 0) return res.status(200).send({
-            message: "تمت العملية بنجاح ",
-            data: dept
-        })
-        else return res.status(404).send({
-            message: " يرجي ادخال بيانات صحيحه  ",
-            data: ""
-        })
-    }
-    catch (e) {
-        res.status(500).send({
-            message: "حدث خطأ في الخادم الداخلي",
-            date: e
-        })
-    }
-}
+
+// const departmentSearch1 = async (req, res) => {
+//     const name = req.body.name
+//     try {
+//         const dept = await departmentsModel.find({ name })
+//         if (dept && dept.length != 0) return res.status(200).send({
+//             message: "تمت العملية بنجاح ",
+//             data: dept
+//         })
+//         else return res.status(404).send({
+//             message: " يرجي ادخال بيانات صحيحه  ",
+//             data: ""
+//         })
+//     }
+//     catch (e) {
+//         res.status(500).send({
+//             message: "حدث خطأ في الخادم الداخلي",
+//             date: e
+//         })
+//     }
+// }
 
 
 const departmentSearch = async (req, res) => {
@@ -219,7 +265,7 @@ const departmentSearch = async (req, res) => {
             data: searchResult
         })
         else return res.status(404).send({
-            message: " يرجي ادخال بيانات صحيحه  ",
+            message: "لا توجد نتائج للبحث تأكد من ادخال بيانات صحيحه ",
             data: ""
         })
     }
