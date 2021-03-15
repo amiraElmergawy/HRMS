@@ -89,7 +89,7 @@ const departmentUpdate = async (req, res) => {
     catch (e) {
         res.status(500).send({
             data: e,
-            // message: e
+            message: "يرجي ادخال بيانات صحيحه"
         })
     }
 }
@@ -106,14 +106,20 @@ const departmentDelete = async (req, res) => {
         }
         else {
             // department.childs.forEach((dept) => {
-            // });
-            // console.log(department)
+                // });
+                // console.log(department)
+                // console.log(department, department.childs, department.parent)
+                // console.log(depertment.parent)
             await department.populate('employees').execPopulate()
-            // console.log(department.employees)
-            if (department.employees.length > 0 || department.childs.length > 0) {
+            if (department.employees.length > 0) {
                 res.status(405).send({
                     message: 'لا يسمح بمسح هذا القسم لوجود عاملين به',
                     data: department.employees
+                })
+            } else if(department.childs.length > 0 || department.parent._id){
+                res.status(405).send({
+                    message: 'لا يسمح بمسح هذا القسم لانه مربوط باقسام اخري',
+                    // data: department.employees
                 })
             }
             else {
