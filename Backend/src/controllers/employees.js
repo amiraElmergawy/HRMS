@@ -29,7 +29,7 @@ const employeeDetails = async (req, res) => {
 }
 
 const employeeCreate = async (req, res) => {
-    employeeData = new employeesModel({
+    let employeeData = new employeesModel({
         ...req.body
         // author: req.user._id
     })
