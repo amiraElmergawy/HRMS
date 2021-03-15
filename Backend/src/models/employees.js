@@ -197,9 +197,6 @@ const employeeSchema = mongoose.Schema({
         },
         anotherQualifications: {
             type: String,
-            validate(value) {
-                customValidator.testAr(value)
-            }
         },
     },
     contractData: { // Employment contract data
@@ -265,7 +262,7 @@ const employeeSchema = mongoose.Schema({
         },
         salary: { // first salary (in the contract) can't be updated
             type: Number,
-            required: true
+            // required: true
         },
         currentSalary: {
             type: Number,
