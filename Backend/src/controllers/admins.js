@@ -38,7 +38,7 @@ const adminDetails = async (req, res) => {
 }
 
 const adminCreate = async (req, res) => {
-    adminData = new adminsModel(req.body)
+    var adminData = new adminsModel(req.body)
     const token = await adminData.generateToken()
     try {
         await adminData.save()
@@ -62,7 +62,7 @@ const adminCreate = async (req, res) => {
 
 const adminUpdate = async(req, res) => {
     const _id = req.params.id
-    avlUpdates = ['userName', 'password']
+    const avlUpdates = ['userName', 'password']
     const keys = Object.keys(req.body)
     const flag = keys.every((k)=> avlUpdates.includes(k))
     if(!flag) return res.status(405).send({
