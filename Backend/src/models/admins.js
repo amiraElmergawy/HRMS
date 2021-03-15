@@ -45,7 +45,7 @@ adminSchema.pre('save', async function (next) {
 adminSchema.statics.findLogin = async (userName, password) => {
     const admin = await adminModel.findOne({ userName })
     if (!admin) throw new customError('اسم المستخدم غير صحيح')
-    flag = await bcrypt.compare(password, admin.password)
+    const flag = await bcrypt.compare(password, admin.password)
     if (!flag) throw new customError('كلمة المرور غير صحيحة')
     return admin
 }
