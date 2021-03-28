@@ -8,6 +8,7 @@ const adminRoutes = require('./routes/admins')
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use(express.static('dist/Frontend'))
 app.use('/departments', departmentRoutes) //only access departmentRoutes if the requestURL begins with '/departments'
 app.use('/employees', employeeRoutes)
 app.use('/admins', adminRoutes)
