@@ -4806,7 +4806,7 @@ class MainService {
         this.http = http;
         this.router = router;
         this.flashMessageClass = 'alert alert-light w-50 mt-5 center';
-        this.baseURL = 'http://127.0.0.1:3000/';
+        this.baseURL = 'http://127.0.0.1:3000/api/';
     }
     postReq(url, obj = null) {
         return this.http.post(url, obj);
